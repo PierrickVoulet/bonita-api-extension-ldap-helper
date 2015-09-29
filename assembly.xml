@@ -1,0 +1,29 @@
+<assembly>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<fileSets>
+		<fileSet>
+			<directory>target</directory>
+			<outputDirectory>lib</outputDirectory>
+			<includes>
+				<include>bonita-api-extension-ldap-helper-*.jar</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/groovy</directory>
+			<outputDirectory></outputDirectory>
+			<includes>
+				<include>*.groovy</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/resources/groovy</directory>
+			<outputDirectory></outputDirectory>
+			<includes>
+				<include>page.properties</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>

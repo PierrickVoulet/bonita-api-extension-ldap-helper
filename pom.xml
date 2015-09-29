@@ -1,0 +1,217 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.bonitasoft.apiextension.ldap.helper</groupId>
+	<artifactId>bonita-api-extension-ldap-helper</artifactId>
+	<version>7.1.0</version>
+	<packaging>jar</packaging>
+
+	<name>Bonita API Extension LDAP Helper</name>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<properties>
+		<groovy.version>1.8.6-01</groovy.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.bonitasoft.engine</groupId>
+			<artifactId>bonita-client-sp</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.bonitasoft.engine</groupId>
+			<artifactId>bonita-common-sp</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bonitasoft.console</groupId>
+			<artifactId>console-server</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.bonitasoft.console</groupId>
+			<artifactId>console-server-sp</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.bonitasoft.distrib</groupId>
+			<artifactId>bonita-ldap-synchronizer</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy.modules.http-builder</groupId>
+			<artifactId>http-builder</artifactId>
+			<version>0.5.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.3.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>4.2.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources/groovy</directory>
+				<excludes>
+					<exclude>page.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<inherited>false</inherited>
+				<configuration>
+					<ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
+					<appendAssemblyId>false</appendAssemblyId>
+					<descriptors>
+						<descriptor>assembly.xml</descriptor>
+					</descriptors>
+					<finalName>api-ext-ldap-helper-${pom.version}-assembly</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.groovy.maven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<classpathScope>runtime</classpathScope>
+							<scriptpath>
+								<path>${project.basedir}/src/main/script</path>
+							</scriptpath>
+							<source>
+import org.apache.commons.fileupload.FileItem
+import org.apache.commons.fileupload.FileItemFactory
+import org.apache.commons.fileupload.disk.DiskFileItem
+import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.apache.http.entity.mime.MultipartEntity
+import org.apache.http.entity.mime.HttpMultipartMode
+import org.apache.http.entity.mime.content.InputStreamBody
+import org.apache.http.entity.mime.content.StringBody
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.multipart.commons.CommonsMultipartFile
+import java.io.File;
+import groovyx.net.http.*
+import java.net.URI
+
+//---------- login
+
+def cookies = []
+
+def bonitasoft = new RESTClient("http://localhost:8080/")
+def loginResult = bonitasoft.post(
+	path: "/bonita/loginservice",
+	requestContentType: "application/x-www-form-urlencoded",
+	body: "username=Walter.Bates&amp;password=bpm&amp;redirect=true"
+)
+
+log.info loginResult.status + ""
+log.info 'Headers: -----------'
+loginResult.headers.each { h ->
+	log.info " ${h.name} : ${h.value}"
+	if(h.name.equals("Set-Cookie")) {
+		jsessionID = h.value.replace("JSESSIONID=", "").substring(0, 32)
+		log.info " JSESSIONID has been found: " + jsessionID
+		loginResult.getHeaders('Set-Cookie').each {
+			String cookie = it.value.split(';')[0]
+			log.info(" Adding cookie to collection: $cookie")
+			cookies.add(cookie)
+		}
+	}
+}
+
+//-----------------
+
+File file = new File("C:/Users/pierrick/Documents/Contribs/bonita-api-extension-ldap-helper/target/api-ext-ldap-helper-${pom.version}-assembly.zip");
+String fieldName = "file";
+String contentType = "application/zip";
+boolean isFormField = false;
+String fileName = "api-ext-ldap-helper-${pom.version}-assembly.zip";
+int sizeThreshold = 10240;
+DiskFileItemFactory factory = new DiskFileItemFactory();
+FileItem fi = factory.createItem(fieldName,contentType,isFormField,fileName);
+DiskFileItem item = new DiskFileItem(fieldName, contentType, isFormField, fileName, sizeThreshold, file);
+item.getOutputStream();
+MultipartFile mf = new CommonsMultipartFile(item);
+
+def bonitasoftUploadFile = new HTTPBuilder('http://localhost:8080/bonita/portal/pageUpload?action=edit')
+bonitasoftUploadFile.handler.failure = { resp, reader ->
+	[response:resp, reader:reader]
+}
+bonitasoftUploadFile.handler.success = { resp, reader ->
+	[response:resp, reader:reader]
+}
+def result = bonitasoftUploadFile.request(Method.POST) { req ->
+	requestContentType: "multipart/form-data"
+	headers['Cookie'] = cookies.join(';')
+	MultipartEntity multiPartContent = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE)
+	// Adding Multi-part file parameter "imageFile"
+	multiPartContent.addPart("file", new InputStreamBody(mf.inputStream, mf.contentType, mf.originalFilename))
+	// Adding another string parameter "city"
+	multiPartContent.addPart("name", new StringBody(fileName))
+	req.setEntity(multiPartContent)
+}
+
+log.info "response status: " + result['response'].statusLine
+log.info 'Headers: -----------'
+result['response'].headers.each { h ->
+	log.info " ${h.name} : ${h.value}"
+}
+
+log.info 'Response data: -----'
+log.info result['reader'].getText()
+log.info '--------------------'
+							</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
