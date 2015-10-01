@@ -16,11 +16,11 @@ import java.net.URI
 
 def cookies = []
 
-def bonitasoft = new RESTClient("http://localhost:8080/")
+def bonitasoft = new RESTClient("http://localhost:8081/")
 def loginResult = bonitasoft.post(
 	path: "/bonita/loginservice",
 	requestContentType: "application/x-www-form-urlencoded",
-	body: "username=Walter.Bates&password=bpm&redirect=true"
+	body: "username=Walter.Bates&amp;password=bpm&amp;redirect=true"
 )
 
 log.info loginResult.status + ""
@@ -38,13 +38,13 @@ loginResult.headers.each { h ->
 	}
 }
 
-//-----------------
+//----------------- upload the file
 
-File file = new File("C:/Users/pierrick/Documents/Contribs/bonita-api-extension-ldap-helper/target/api-ext-ldap-helper-${pom.version}-assembly.zip");
+File file = new File("C:/Users/pierrick/Documents/Contribs/bonita-api-extension-ldap-helper/target/api-ext-ldap-helper-7.1.0-assembly.zip");
 String fieldName = "file";
 String contentType = "application/zip";
 boolean isFormField = false;
-String fileName = "api-ext-ldap-helper-${pom.version}-assembly.zip";
+String fileName = "api-ext-ldap-helper-7.1.0-assembly.zip";
 int sizeThreshold = 10240;
 DiskFileItemFactory factory = new DiskFileItemFactory();
 FileItem fi = factory.createItem(fieldName,contentType,isFormField,fileName);
@@ -52,7 +52,7 @@ DiskFileItem item = new DiskFileItem(fieldName, contentType, isFormField, fileNa
 item.getOutputStream();
 MultipartFile mf = new CommonsMultipartFile(item);
 
-def bonitasoftUploadFile = new HTTPBuilder('http://localhost:8080/bonita/portal/pageUpload?action=edit')
+def bonitasoftUploadFile = new HTTPBuilder('http://localhost:8081/bonita/portal/pageUpload?action=edit')
 bonitasoftUploadFile.handler.failure = { resp, reader ->
 	[response:resp, reader:reader]
 }
