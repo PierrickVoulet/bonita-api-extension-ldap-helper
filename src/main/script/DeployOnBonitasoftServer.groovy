@@ -32,6 +32,8 @@ def password = "bpm"
 def fileName = "api-ext-ldap-helper-7.1.0-assembly.zip"
 // the path of the archive file to be automatically deployed
 def filepath = "./target/" + fileName
+//the URL token of the custom page ("name" property defined in the "page.properties" file)
+def urlToken = "custompage_ldapHelper"
 
 //////////////////////
 ///// Parameters ----------- END
@@ -103,7 +105,7 @@ log.info 'Get Page Content: ' + getPageResultJSON.toString()
 def existingPageId = -1
 
 getPageResultJSON.each { h ->
-	if(h.contentName == "api-ext-ldap-helper-7.1.0-assembly.zip") {
+	if(h.urlToken == urlToken) {
 		existingPageId = h.id
 	}
 }
