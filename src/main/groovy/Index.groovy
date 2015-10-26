@@ -19,10 +19,10 @@ import org.bonitasoft.engine.api.IdentityAPI;
 import org.bonitasoft.engine.identity.User;
 import org.bonitasoft.engine.session.APISession;
 
+import com.bonitasoft.apiextension.ldap.helper.CallParameters
 import com.bonitasoft.apiextension.ldap.helper.JaasCheck
 import com.bonitasoft.apiextension.ldap.helper.PropertiesBonitaConnection
 import com.bonitasoft.apiextension.ldap.helper.PropertiesLdapConnection
-import com.bonitasoft.apiextension.ldap.helper.CraneTruckAccess.CraneTruckParam
 import com.bonitasoft.apiextension.ldap.helper.CraneTruckAccess
 import com.bonitasoft.apiextension.ldap.helper.PropertiesSynchronize.PropertiesSynchronizeTest
 import com.bonitasoft.apiextension.ldap.helper.PropertiesSynchronize
@@ -53,11 +53,11 @@ public class Index implements RestApiController {
 	
 			HashMap<String,Object> answer = null;
 			if ("readfromproperties".equals(action)) {
-				CraneTruckParam craneTruckParam = CraneTruckParam.getInstanceFromJsonSt( json );
-				answer =  CraneTruckAccess.readFromProperties(craneTruckParam);
+				CallParameters craneTruckParam = CallParameters.getInstanceFromJsonSt( json );
+				answer = CraneTruckAccess.readFromProperties(craneTruckParam);
 			} else if ("writetoproperties".equals(action)) {
-				CraneTruckParam craneTruckParam = CraneTruckParam.getInstanceFromJsonSt( json );
-				answer =  CraneTruckAccess.writeToProperties(json,craneTruckParam);
+				CallParameters craneTruckParam = CallParameters.getInstanceFromJsonSt( json );
+				answer = CraneTruckAccess.writeToProperties(json,craneTruckParam);
 			} else if ("testsynchronize".equals(action)) {
 				PropertiesSynchronizeTest synchronizeTest = PropertiesSynchronize.PropertiesSynchronizeTest.getInstanceFromJsonSt( json );
 				answer = PropertiesSynchronize.checkSynchronize( synchronizeTest ).toMap();

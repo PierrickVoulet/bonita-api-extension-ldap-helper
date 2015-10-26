@@ -10,44 +10,14 @@ import com.bonitasoft.apiextension.ldap.helper.ToolFileProperties.PropertiesPara
 import com.bonitasoft.apiextension.ldap.helper.Toolbox.StatusOperation;
 
 public class CraneTruckAccess {
-
-    static Logger logger = Logger.getLogger(PropertiesBonitaConnection.class.getName());
-
-    public static class CraneTruckParam {
-
-        String ldapSynchronizerPath;
-        String domain;
-
-        public static CraneTruckParam getInstanceFromJsonSt(final String jsonSt) {
-            if (jsonSt == null) {
-                return new CraneTruckParam();
-            }
-            logger.info("LdapConnectionParam: JsonSt[" + jsonSt + "]");
-            final HashMap<String, Object> jsonHash = (HashMap<String, Object>) JSONValue.parse(jsonSt);
-            if (jsonHash == null) {
-                return new CraneTruckParam();
-            }
-            final CraneTruckParam craneTruckParam = new CraneTruckParam();
-            craneTruckParam.ldapSynchronizerPath = Toolbox.getString(jsonHash.get("ldapSynchronizerPath"), null);
-            craneTruckParam.domain = Toolbox.getString(jsonHash.get("domain"), PropertiesBonitaConnection.DEFAULT_TENANT);
-
-            return craneTruckParam;
-        }
-
-        @Override
-        public String toString()
-        {
-            return "Path[" + ldapSynchronizerPath + "] domain[" + domain + "]";
-        }
-    }
+    static Logger logger = Logger.getLogger(CraneTruckAccess.class.getName());
 
     /**
      * @param ldapSynchronizerPath
      * @param mDomain
      * @return
      */
-    public static HashMap<String, Object> readFromProperties(final CraneTruckParam craneTruckParam)
-    {
+    public static HashMap<String, Object> readFromProperties(final CallParameters craneTruckParam) {
         logger.info("CraneTruck.readFromProperties: Start ------------------------------- ");
         final HashMap<String, Object> result = new HashMap<String, Object>();
 
@@ -98,7 +68,7 @@ public class CraneTruckAccess {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> writeToProperties(final String jsonSt, final CraneTruckParam craneTruckParam)
+    public static Map<String, Object> writeToProperties(final String jsonSt, final CallParameters craneTruckParam)
     {
         final StatusOperation statusOperationCollector = new StatusOperation("WriteProperties");
         final HashMap<String, Object> jsonHash = (HashMap<String, Object>) JSONValue.parse(jsonSt);
